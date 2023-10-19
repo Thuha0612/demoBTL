@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css" integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+    <title>Music Player</title>
+  </head>
+
+  <body>
+    <div class="main-container">
+      <div class="left">
+        <div class="container">
+          <div class="music-player">
+            <div class="cover">
+              <img class="music_img" src="" alt="" />
+            </div>
+
+            <div class="main-title-vol">
+              <div class="titre">
+                <h3 class="artist">Kygo</h3>
+                <h1 class="song-title">Stole the show</h1>
+              </div>
+
+              <div class="volume-controls">
+                <i class="fa-light fa-volume-low fa-2xs"></i>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.01" value="0.5" />
+                <i class="fa-light fa-volume-high fa-2xs"></i>
+              </div>
+            </div>
+
+            <div class="progressbar_container">
+              <div class="progress_duration_meter">
+                <div id="current_time">0:00</div>
+                <div id="duration">0:00</div>
+              </div>
+              <div class="progress_div">
+                <div class="progress"></div>
+              </div>
+            </div>
+
+            <div class="music_controls">
+              <i class="fas fa-backward" id="prev" title="Previous"></i>
+              <i class="fas fa-play main_button" id="play" title="Play"></i>
+              <i class="fas fa-forward" id="next" title="Next"></i>
+            </div>
+
+            <div class="lecteur">
+              <audio class="audio-player" src=""></audio>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right">
+        <div class="playlist-heading">
+          <div class="playlist-title">
+            <button id="toggleButton" class="toggle-button" onclick="toggleContent()"><i id="toggleIcon" class="fa-solid fa-feather"></i></button>
+            <h2 id="contentTitle" style="margin-left: 20px;">Lyrics</h2>
+          </div>
+
+          <!-- vocab -->
+          {% comment %} <div class="popup-container">
+            <div class="popup-content">
+              <div class="popup-part">
+                <p>Vocab 1 and meaning Vocab 1 and meaning</p>
+                <button class="add-button">Add to list</button>
+              </div>
+            </div>
+            <button class="close-button">.X.</button>
+          </div>
+            {% endcomment %}
+          <div class="playlist-title">
+            <button id="vocabButton" class="vocab-button" onclick="vocabContent()"><i id="vocabIcon" class="fa-solid fa-book"></i></button>
+            <h2 id="contentTitleVocab" style="margin-left: 20px;">Vocabulary</h2>
+          </div>
+        </div>
+
+        <div class="music" id="playlistContent">
+          <!-- Playlist -->
+          {% for music in musics %}
+            <div class="song">
+              <div class="info">
+                <div class="song-thumbnail">
+                  <img src="/home/media/{{ music.cover_image }}" alt="" />
+                </div>
+                <div class="titles">
+                  <h4 id="title{{ forloop.counter0 }}">{{ music.title }}</h4>
+                  <p id="artist{{ forloop.counter0 }}">{{ music.artist }}</p>
+                </div>
+              </div>
+              <div class="state playing">
+                <i id="{{ forloop.counter0 }}" onclick="getsong(this)" class="fas fa-play play-button"></i>
+              </div>
+            </div>
+            <hr />
+          {% endfor %}
+        </div>
+        <!-- Lyrics -->
+        <div class="lyrics" id="lyricsContent" style="display: none;">
+          <h2 class="lyrics-title" style="color: aliceblue; margin:0 0 0 20px;">Lyrics</h2>
+          <div class="lyrics-content" style="margin-top: 0;">
+            <div class="titre">
+              <p class="lyricstxt" style="color:aliceblue" style="padding-left: 30px;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!--Vocab-->
+        <div class="vocab" id="vocabContent" style="display: none;">
+          <h2 class="vocab-title" style="color: aliceblue; margin:0 0 0 20px;">Vocabulary</h2>
+          <div class="vocab-content" style="margin-top: 0;">
+            <div class="titre">
+              <p class="vocabtxt" style="color:aliceblue" style="padding-left: 30px;"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div>
+      {% comment %} <li>
+        <a class="add-song-button" href="/add"><i class="fas fa-plus"></i></a>
+      </li> {% endcomment %}
+      <li>
+        <a class="main-button" href="/"><i class="fa-solid fa-house"></i></a>
+      </li>
+      {% comment %} <a class="vocab-button" href="/vocab"><i class="fa-solid fa-book-open"></i></a> {% endcomment %}
+    </div>
+
+    {{ music_list|json_script:'musics' }} <!-- convert music_list to json string and assign to js var called 'musics' -->
+
+    <script src="{% static 'js/home.js' %}"></script>
+    <script>
+      function toggleContent() {
+        var toggleButton = document.getElementById('toggleButton')
+        var toggleIcon = document.getElementById('toggleIcon')
+        var vocabIcon = document.getElementById('vocabIcon')
+        var playlistContent = document.getElementById('playlistContent')
+        var lyricsContent = document.getElementById('lyricsContent')
+        var contentTitle = document.getElementById('contentTitle')
+        var vocabContent = document.getElementById('vocabContent')
+        var vocabButton = document.getElementById('vocabButton')
+        var contentTitleVocab = document.getElementById('contentTitleVocab')
+      
+        if (playlistContent.style.display === 'none') {
+          playlistContent.style.display = 'block'
+          lyricsContent.style.display = 'none'
+          vocabContent.style.display = 'none'
+          toggleIcon.classList.remove('fas', 'fa-play')
+          toggleIcon.classList.add('fas', 'fa-bars')
+          vocabIcon.classList.remove('fas', 'fa-play')
+          vocabIcon.classList.add('fas', 'fa-bars')
+          toggleButton.title = 'Show Lyrics'
+          contentTitle.textContent = 'Show Lyrics'
+          vocabButton.title = 'Vocab list'
+          contentTitleVocab.textContent = 'Vocab list'
+        } else {
+          playlistContent.style.display = 'none'
+          lyricsContent.style.display = 'block'
+          vocabContent.style.display = 'none'
+          toggleIcon.classList.remove('fas', 'fa-bars')
+          toggleIcon.classList.add('fas', 'fa-play')
+          vocabIcon.classList.remove('fas', 'fa-bars')
+          vocabIcon.classList.add('fas', 'fa-play')
+          toggleButton.title = 'Playlist'
+          contentTitle.textContent = 'Playlist'
+          vocabButton.title = 'Playlist'
+          contentTitleVocab.textContent = 'Playlist'
+        }
+      }
+      
+      function vocabContent(){
+        var vocabButton = document.getElementById('vocabButton')
+        var vocabIcon = document.getElementById('vocabIcon')
+        var toggleIcon = document.getElementById('toggleIcon')
+        var playlistContent = document.getElementById('playlistContent')
+        var lyricsContent = document.getElementById('lyricsContent')
+        var vocabContent = document.getElementById('vocabContent')
+        var contentTitleVocab = document.getElementById('contentTitleVocab')
+        var toggleButton = document.getElementById('toggleButton')
+        var contentTitle = document.getElementById('contentTitle')
+
+        if(playlistContent.style.display === 'none'){
+          playlistContent.style.display = 'block'
+          lyricsContent.style.display = 'none'
+          vocabContent.style.display = 'none'
+          vocabIcon.classList.remove('fas', 'fa-play')
+          vocabIcon.classList.add('fas', 'fa-bars')
+          toggleIcon.classList.remove('fas', 'fa-play')
+          toggleIcon.classList.add('fas', 'fa-bars')
+          toggleButton.title = 'Show Lyrics'
+          contentTitle.textContent = 'Show Lyrics'
+          vocabButton.title = 'Vocab list'
+          contentTitleVocab.textContent = 'Vocab list'
+        } else {
+          playlistContent.style.display = 'none'
+          lyricsContent.style.display = 'none'
+          vocabContent.style.display = 'block'
+          vocabIcon.classList.remove('fas', 'fa-bars')
+          vocabIcon.classList.add('fas', 'fa-play')
+          toggleIcon.classList.remove('fas', 'fa-bars')
+          toggleIcon.classList.add('fas', 'fa-play')
+          vocabButton.title = 'Playlist'
+          contentTitleVocab.textContent = 'Playlist'
+          toggleButton.title = 'Playlist'
+          contentTitle.textContent = 'Playlist'
+        }
+      }
+    </script>
+  </body>
+</html>
